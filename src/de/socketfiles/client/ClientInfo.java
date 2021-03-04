@@ -1,3 +1,7 @@
+package de.socketfiles.client;
+
+import de.socketfiles.Server;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

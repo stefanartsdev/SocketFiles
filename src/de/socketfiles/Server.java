@@ -1,3 +1,7 @@
+package de.socketfiles;
+
+import de.socketfiles.client.ClientInfo;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;

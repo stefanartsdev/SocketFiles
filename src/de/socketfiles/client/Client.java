@@ -1,3 +1,5 @@
+package de.socketfiles.client;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -24,7 +26,7 @@ public class Client {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client c = new Client("localhost", 1337, "Stefan");
         c.connect();
-        c.sendFile(new File("test.txt"));
+        c.sendFile(new File("tes.txt"));
         c.close();
         System.out.println("Connection closed.");
     }
