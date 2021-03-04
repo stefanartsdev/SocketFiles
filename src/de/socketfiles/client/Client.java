@@ -82,12 +82,14 @@ public class Client {
 
     public void close() {
         try {
-            ArrayList<Object> transfer = new ArrayList<>();
-            transfer.add("sfp");
-            transfer.add("exit");
-            out.writeObject(transfer);
-            out.flush();
-            socket.close();
+            if(isOnline()) {
+                ArrayList<Object> transfer = new ArrayList<>();
+                transfer.add("sfp");
+                transfer.add("exit");
+                out.writeObject(transfer);
+                out.flush();
+                socket.close();
+            }
         } catch (IOException e) {}
     }
 

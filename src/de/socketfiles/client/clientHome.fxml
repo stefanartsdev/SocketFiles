@@ -1,60 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"  fx:controller="de.socketfiles.client.HomeFormController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu mnemonicParsing="false" text="Aktionen">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem fx:id="uploadFileBtn" mnemonicParsing="false" onAction="#uploadFile" text="Datei hochladen..." />
+                  <MenuItem fx:id="disconnectBtn" mnemonicParsing="false" onAction="#disconnect" text="Verbindung trennen" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+                  <MenuItem fx:id="helpBtn" mnemonicParsing="false" onAction="#help" text="Hilfe" />
+              <MenuItem mnemonicParsing="false" onAction="#about" text="Über" />
             </items>
           </Menu>
         </menus>
       </MenuBar>
    </top>
    <right>
-      <SplitPane dividerPositions="0.0725" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
         <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                  <Label alignment="CENTER" layoutX="37.0" layoutY="3.0" text="Benutzer online" />
-               </children>
-               <padding>
-                  <Insets top="5.0" />
-               </padding>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+            <Label alignment="CENTER" text="Benutzer online" />
+            <ListView fx:id="userList" onDragDropped="#onDragDropped" prefHeight="328.0" prefWidth="159.0" />
         </items>
       </SplitPane>
    </right>
    <center>
-      <SplitPane dividerPositions="0.0725" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
         <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                  <Label layoutX="205.0" layoutY="3.0" text="Pfad: /" />
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+            <Label fx:id="pathLabel" text="Pfad: /" />
+            <ListView fx:id="fileList" onDragDropped="#onDragDropped" prefHeight="200.0" prefWidth="200.0" />
         </items>
       </SplitPane>
    </center>
    <bottom>
-      <Label text="Label" BorderPane.alignment="CENTER" />
+      <Label text="(S)ocket(F)ile(P)rotocol 1 - Devleoped by Stefan H." BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>

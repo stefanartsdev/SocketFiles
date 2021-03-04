@@ -5,17 +5,20 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.MaskerPane?>
 
-<Pane maxHeight="170.0" maxWidth="400.0" minHeight="170.0" minWidth="400.0" prefHeight="170.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.socketfiles.client.LoginFormController">
+<Pane maxHeight="170.0" maxWidth="400.0" minHeight="170.0" minWidth="400.0" prefHeight="170.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.socketfiles.client.LoginFormController">
    <children>
-      <Button fx:id="loginBtn" layoutX="268.0" layoutY="83.0" mnemonicParsing="false" onAction="#onLogin" text="Anmelden" />
-      <Label layoutX="68.0" layoutY="30.0" text="SocketFileProtocol Client">
+      <Button fx:id="loginBtn" layoutX="165.0" layoutY="125.0" mnemonicParsing="false" onAction="#onLogin" text="Anmelden" />
+      <Label layoutX="69.0" layoutY="14.0" text="SocketFileProtocol Client">
          <font>
             <Font size="24.0" />
          </font>
       </Label>
-      <TextField fx:id="usernameField" layoutX="51.0" layoutY="83.0" promptText="Benutzername" />
       <Label layoutX="14.0" layoutY="141.0" text="Developed by Stefan H." />
       <Button fx:id="helpBtn" layoutX="364.0" layoutY="137.0" mnemonicParsing="false" onAction="#onHelp" text="?" />
+      <TextField fx:id="addressField" layoutX="126.0" layoutY="55.0" promptText="Serveradresse" text="localhost:1805" />
+      <TextField fx:id="usernameField" layoutX="126.0" layoutY="91.0" promptText="Benutzername" />
+      <MaskerPane fx:id="loadingIndicator" layoutX="-60.0" layoutY="-57.0" prefHeight="284.0" prefWidth="521.0" text="Bitte warten..." visible="false" />
    </children>
 </Pane>

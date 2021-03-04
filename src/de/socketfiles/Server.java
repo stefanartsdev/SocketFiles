@@ -16,7 +16,7 @@ public class Server extends ServerSocket {
 
     public static void main(String[] args) {
         try {
-            new Server(1337);
+            new Server(1805);
         } catch (IOException e) {
             e.printStackTrace();
         }
