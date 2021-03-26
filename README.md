@@ -1,3 +1,4 @@
 # SocketFiles
-[IMG=https://img.shields.io/badge/Quality-A-brightgreen][/IMG]
+[![Donate](https://img.shields.io/badge/PayPal-Donate-gray.svg?style=flat&logo=paypal&colorA=0071bb&logoColor=fff)](https://paypal.me/stefanartsdev)
+[![snapshot](https://img.shields.io/badge/Status-dev-red)](https://paypal.me/RafaelMardojaiCM)
 A server/client environment utilising the socket file protocol to transfer files
