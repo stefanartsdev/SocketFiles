@@ -1,6 +1,8 @@
 package de.socketfiles;
 
 import de.socketfiles.client.ClientInfo;
+import de.socketfiles.client.FileMeta;
+import de.socketfiles.client.SocketFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +11,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Server extends ServerSocket {
 
@@ -52,8 +56,22 @@ public class Server extends ServerSocket {
                     System.out.println("Client connected /" + ci.getSocket().getInetAddress().getHostAddress()
                             + " u: " + ci.getUsername());
                     ci.activate();
-                    ci.send("[SFP] Welcome, " + ci.getUsername() + "!");
-                } else ci.getSocket().close();
+                    List<Object> transfer = new ArrayList<>();
+                    transfer.add("sfp");
+                    transfer.add("users");
+                    transfer.add(getUsernameList());
+                    ci.send(transfer);
+                    System.out.println("1 " + transfer);
+                    transfer = new ArrayList<>();
+                    transfer.add("sfp");
+                    transfer.add("files");
+                    transfer.add(getCurrentMeta());
+                    System.out.println("2 " + transfer);
+                    ci.send(transfer);
+                    System.out.println("3 " + transfer);
+                } else {
+                    ci.getSocket().close();
+                }
 
             } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Connection attempt from /" + s.getInetAddress().getHostAddress() + " failed: " + e);
@@ -79,7 +97,13 @@ public class Server extends ServerSocket {
                 }
                 Files.write(Paths.get(newFile.getPath()), fileContent);
                 System.out.println("Successfully received file " + fileName + " by " + ci.getUsername());
+                ArrayList<Object> data = new ArrayList<>();
+                data.add("sfp");
+                data.add("files");
+                data.add(getCurrentMeta());
+                ci.send(data);
             } catch (IOException e) {
+                e.printStackTrace();
                 System.out.println("Server error: Could not create received file.");
             }
         } else if (transfer.size() == 2 &&
@@ -98,12 +122,40 @@ public class Server extends ServerSocket {
 
     }
 
+    private ArrayList<FileMeta> getCurrentMeta() throws IOException {
+        ArrayList<FileMeta> files = new ArrayList<>();
+        File root = new File("files");
+        for(File dir : root.listFiles()) {
+            if(dir.isDirectory()) {
+                for(File userfile : dir.listFiles()) {
+                    files.add(new FileMeta(userfile.getName(),
+                            dir.getName(), Files.size(Paths.get(userfile.getPath()))));
+                }
+            }
+        }
+        return files;
+    }
+
+    private SocketFile getFileByMeta(String name, String author) throws IOException {
+        return new SocketFile(name,
+                author,
+                Files.readAllBytes(Paths.get("files"+File.separator+author+File.separator+name))
+        );
+    }
+
     private boolean validateRequest(Object o, ClientInfo ci) {
 
         if (o instanceof String[]) {
             String[] msg = (String[]) o;
             if (msg.length != 3 || !msg[0].equals("sfp") || !msg[1].equals("login")) {
                 return false;
+            }
+            if(msg[2].isEmpty() || !msg[2].matches("^[a-zA-Z0-9_]*$")) {
+                return false;
+            }
+            String[] users = getUsernameList();
+            for (String user : users) {
+                if (user.equals(msg[2])) return false;
             }
             ci.setUsername(msg[2]);
             return true;
@@ -113,6 +165,14 @@ public class Server extends ServerSocket {
     }
 
     public synchronized ArrayList<ClientInfo> getClients() {
+        return clients;
+    }
+
+    public String[] getUsernameList() {
+        String[] clients = new String[getClients().size()];
+        for(int i = 0; i < clients.length; i++) {
+            clients[i] = this.clients.get(i).getUsername();
+        }
         return clients;
     }
 }

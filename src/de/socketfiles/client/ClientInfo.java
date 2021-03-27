@@ -33,7 +33,8 @@ public class ClientInfo {
                     }
                 } catch (IOException|ClassNotFoundException e) {
                     disconnect(server);
-                    System.out.println("Error: " + e);
+                    System.out.println("Error: ");
+                    e.printStackTrace();
                 }
             }
         });
@@ -75,7 +76,7 @@ public class ClientInfo {
         return in.readObject();
     }
 
-    public synchronized void send(Object o) throws IOException {
+    public void send(Object o) throws IOException {
         out.writeObject(o);
         out.flush();
     }

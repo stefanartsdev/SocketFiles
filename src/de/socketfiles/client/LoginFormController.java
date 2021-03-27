@@ -5,10 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.controlsfx.control.MaskerPane;
 
@@ -16,6 +13,8 @@ import java.io.IOException;
 import java.net.URL;
 
 public class LoginFormController {
+
+    private static HomeFormController homeFormController;
 
     @FXML
     private Button loginBtn;
@@ -57,33 +56,39 @@ public class LoginFormController {
         } else {
             return;
         }
+        int finalPort = port;
         Thread t = new Thread(() -> {
             try {
-                ClientLogic.tryLogin(address, 1805, usernameField.getText());
-                Platform.runLater(() -> {
-                    loadingIndicator.setVisible(false);
-                    URL file = getClass().getResource("/de/socketfiles/client/clientHome.fxml");
-                    assert file != null;
-                    Stage primaryStage = (Stage)loadingIndicator.getScene().getWindow();
-                    try {
-                        primaryStage.setScene(new Scene(FXMLLoader.load(file)));
-                    } catch (IOException e) {}
-                });
+                    ClientLogic.tryLogin(address, finalPort, usernameField.getText());
             } catch (IOException | ClassNotFoundException e) {
-                Platform.runLater(() -> {
                     loadingIndicator.setVisible(false);
-                    showInfo("Die Verbindung konnte nicht hergestellt werden: " + e,
-                            "Verbindung fehlgeschlagen",
-                            Alert.AlertType.ERROR);
-                });
+                    Platform.runLater(() -> {
+                        showInfo("Die Verbindung konnte nicht hergestellt werden: " + e,
+                                "Verbindung fehlgeschlagen",
+                                Alert.AlertType.ERROR);
+                    });
+                    return;
             }
+            Platform.runLater(() -> {
+                loadingIndicator.setVisible(false);
+                URL file = getClass().getResource("/de/socketfiles/client/clientHome.fxml");
+                assert file != null;
+                Stage primaryStage = (Stage)loadingIndicator.getScene().getWindow();
+                try {
+                    Scene s = new Scene(FXMLLoader.load(file));
+                    primaryStage.setScene(s);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            });
         });
         t.start();
 
 
     }
 
-    private void showInfo(String msg, String title, Alert.AlertType type) {
+    private static void showInfo(String msg, String title, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle("SFP Client");
         alert.setHeaderText(title);
@@ -92,4 +97,9 @@ public class LoginFormController {
 
     }
 
+    public static void showInfoLater(String msg, String title, Alert.AlertType type) {
+        Platform.runLater(() -> {
+            showInfo(msg, title, type);
+        });
+    }
 }

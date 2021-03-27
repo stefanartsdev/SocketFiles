@@ -1,7 +1,7 @@
 package de.socketfiles.client;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class ClientLogic {
 
@@ -11,6 +11,14 @@ public class ClientLogic {
         client = new Client(address, port, username);
         client.connect();
         return client.isOnline();
+    }
+
+    public static boolean uploadFile(File f) {
+        try {
+            return client.sendFile(f);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public static void close() {
