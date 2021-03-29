@@ -6,6 +6,7 @@ import de.socketfiles.client.SocketFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -56,19 +57,8 @@ public class Server extends ServerSocket {
                     System.out.println("Client connected /" + ci.getSocket().getInetAddress().getHostAddress()
                             + " u: " + ci.getUsername());
                     ci.activate();
-                    List<Object> transfer = new ArrayList<>();
-                    transfer.add("sfp");
-                    transfer.add("users");
-                    transfer.add(getUsernameList());
-                    ci.send(transfer);
-                    System.out.println("1 " + transfer);
-                    transfer = new ArrayList<>();
-                    transfer.add("sfp");
-                    transfer.add("files");
-                    transfer.add(getCurrentMeta());
-                    System.out.println("2 " + transfer);
-                    ci.send(transfer);
-                    System.out.println("3 " + transfer);
+                    updateUsersForAllClients();
+                    updateFilesForClient(ci);
                 } else {
                     ci.getSocket().close();
                 }
@@ -81,8 +71,8 @@ public class Server extends ServerSocket {
     }
 
     public void handleInput(ClientInfo ci, ArrayList<Object> transfer) {
+        if(!transfer.get(0).equals("sfp")) return;
         if (transfer.size() == 4 &&
-                transfer.get(1) instanceof String &&
                 transfer.get(1).equals("send") &&
                 transfer.get(2) instanceof String &&
                 transfer.get(3) instanceof byte[]) {
@@ -97,29 +87,48 @@ public class Server extends ServerSocket {
                 }
                 Files.write(Paths.get(newFile.getPath()), fileContent);
                 System.out.println("Successfully received file " + fileName + " by " + ci.getUsername());
-                ArrayList<Object> data = new ArrayList<>();
-                data.add("sfp");
-                data.add("files");
-                data.add(getCurrentMeta());
-                ci.send(data);
+                updateFilesForAllClients();
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Server error: Could not create received file.");
             }
+        } else if (transfer.size() == 3 &&
+                transfer.get(1).equals("get") &&
+                transfer.get(2) instanceof FileMeta) {
+            FileMeta fm = (FileMeta) transfer.get(2);
+            try {
+                SocketFile file = getFileByMeta(fm);
+                assert file != null;
+                sendFileToClient(ci, file);
+            } catch (IOException e) {
+                System.out.println("Error while sending file to client: File is not existant");
+
+                e.printStackTrace();
+            }
+
         } else if (transfer.size() == 2 &&
-                transfer.get(1) instanceof String &&
                 transfer.get(1).equals("exit")) {
             try {
                 getClients().remove(ci);
                 ci.getSocket().close();
                 System.out.println("Client /" + ci.getSocket().getInetAddress().getHostAddress()
                         + " u: " + ci.getUsername() + " disconnected");
+                updateUsersForAllClients();
             } catch (IOException e) {}
         } else {
             System.out.println("Input from /" + ci.getSocket().getInetAddress().getHostAddress() + ": "
                     + transfer);
         }
 
+    }
+
+    private void sendFileToClient(ClientInfo ci, SocketFile f) throws IOException {
+        ArrayList<Object> transferList = new ArrayList<>();
+        transferList.add("sfp");
+        transferList.add("send");
+        transferList.add(f.getMeta().getName());
+        transferList.add(f.getData());
+        ci.send(transferList);
     }
 
     private ArrayList<FileMeta> getCurrentMeta() throws IOException {
@@ -134,6 +143,14 @@ public class Server extends ServerSocket {
             }
         }
         return files;
+    }
+
+    private SocketFile getFileByMeta(FileMeta fm) throws IOException {
+        File file = new File("files" + File.separator + fm.getAuthor() + File.separator + fm.getName());
+        if(file.exists()) {
+            return getFileByMeta(fm.getName(), fm.getAuthor());
+        }
+        return null;
     }
 
     private SocketFile getFileByMeta(String name, String author) throws IOException {
@@ -175,4 +192,33 @@ public class Server extends ServerSocket {
         }
         return clients;
     }
+
+    public void updateFilesForClient(ClientInfo ci) throws IOException {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add("sfp");
+        data.add("files");
+        data.add(getCurrentMeta());
+        ci.send(data);
+    }
+
+    public void updateFilesForAllClients() throws IOException {
+        for(ClientInfo ci : clients) {
+            updateFilesForClient(ci);
+        }
+    }
+
+    public void updateUsersForClient(ClientInfo ci) throws IOException {
+        List<Object> transfer = new ArrayList<>();
+        transfer.add("sfp");
+        transfer.add("users");
+        transfer.add(getUsernameList());
+        ci.send(transfer);
+    }
+
+    public void updateUsersForAllClients() throws IOException {
+        for(ClientInfo ci : clients) {
+            updateUsersForClient(ci);
+        }
+    }
+
 }

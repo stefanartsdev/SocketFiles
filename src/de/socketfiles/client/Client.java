@@ -120,6 +120,15 @@ public class Client {
                             HomeFormController.updateFiles((ArrayList<FileMeta>) transfer.get(2));
                     }
                 }
+                else if (transfer.size() == 4) {
+                    if (transfer.get(1).equals("send")
+                            && transfer.get(2) instanceof String
+                            && transfer.get(3) instanceof byte[]) {
+                        String fileName = (String) transfer.get(2);
+                        byte[] data = (byte[]) transfer.get(3);
+                        HomeFormController.saveFile(fileName, data);
+                    }
+                }
             }
         }
         System.out.println("Message from server: " + o);
@@ -146,5 +155,14 @@ public class Client {
 
     public boolean isOnline() {
         return online;
+    }
+
+    public void requestDownload(FileMeta f) throws IOException {
+        ArrayList<Object> transferList = new ArrayList<>();
+        transferList.add("sfp");
+        transferList.add("get");
+        transferList.add(f);
+        out.writeObject(transferList);
+        out.flush();
     }
 }

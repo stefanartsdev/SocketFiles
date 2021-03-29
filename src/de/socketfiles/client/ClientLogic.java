@@ -13,9 +13,24 @@ public class ClientLogic {
         return client.isOnline();
     }
 
+    public static boolean disconnect() {
+        if(client != null && !client.isOnline()) return false;
+        client.close();
+        return true;
+    }
+
     public static boolean uploadFile(File f) {
         try {
             return client.sendFile(f);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean requestDownload(FileMeta f) {
+        try {
+            client.requestDownload(f);
+            return true;
         } catch (IOException e) {
             return false;
         }

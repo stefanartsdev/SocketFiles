@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 public class ClientInfo {
@@ -26,12 +27,15 @@ public class ClientInfo {
             while (!socket.isClosed()) {
                 try {
                     Object input = read();
-                    if(validateInput(input)) {
+                    if (validateInput(input)) {
                         server.handleInput(this, (ArrayList<Object>) input);
                     } else {
                         disconnect(server);
                     }
-                } catch (IOException|ClassNotFoundException e) {
+                } catch (SocketException e) {
+                    System.out.println("Client disconnected");
+                    disconnect(server);
+                } catch (IOException | ClassNotFoundException e) {
                     disconnect(server);
                     System.out.println("Error: ");
                     e.printStackTrace();
@@ -46,15 +50,16 @@ public class ClientInfo {
         server.getClients().remove(this);
         try {
             socket.close();
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
     }
 
     @SuppressWarnings("unchecked")
     private boolean validateInput(Object input) {
-        if(input instanceof ArrayList) {
+        if (input instanceof ArrayList) {
             ArrayList<Object> transfer = (ArrayList<Object>) input;
-            if(transfer.size() > 1) {
-                if(transfer.get(0) instanceof String && transfer.get(0).equals("sfp")) {
+            if (transfer.size() > 1) {
+                if (transfer.get(0) instanceof String && transfer.get(0).equals("sfp")) {
                     return true;
                 }
             }
