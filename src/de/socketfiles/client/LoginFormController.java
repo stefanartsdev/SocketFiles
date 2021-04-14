@@ -12,22 +12,22 @@ import org.controlsfx.control.MaskerPane;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * Controller class for the JavaFX login window
+ */
 public class LoginFormController {
-
-    private static HomeFormController homeFormController;
-
-    @FXML
-    private Button loginBtn;
 
     @FXML
     private TextField usernameField, addressField;
 
     @FXML
-    private Button helpBtn;
-
-    @FXML
     private MaskerPane loadingIndicator;
 
+    /**
+     * Action event for the help button
+     * Shows an info alert on how to use the program
+     * @param event
+     */
     @FXML
     void onHelp(ActionEvent event) {
         showInfo("Um sich mit dem Server zu verbinden, müssen Sie einen einzigartigen Nutzernamen verwenden.",
@@ -35,12 +35,20 @@ public class LoginFormController {
                 Alert.AlertType.INFORMATION);
     }
 
+    /**
+     * Action event for the login button
+     * Shows the loading indicator and calls the method login()
+     * @param event
+     */
     @FXML
     void onLogin(ActionEvent event) {
         loadingIndicator.setVisible(true);
         login();
     }
 
+    /**
+     * Tries to connect the user to the specified server address and port
+     */
     private void login() {
         String address;
         int port = 1805;
@@ -88,6 +96,12 @@ public class LoginFormController {
 
     }
 
+    /**
+     * Shows an alert to the user
+     * @param msg alert message
+     * @param title alert title
+     * @param type alert type
+     */
     private static void showInfo(String msg, String title, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle("SFP Client");
@@ -95,11 +109,5 @@ public class LoginFormController {
         alert.setContentText(msg);
         alert.showAndWait();
 
-    }
-
-    public static void showInfoLater(String msg, String title, Alert.AlertType type) {
-        Platform.runLater(() -> {
-            showInfo(msg, title, type);
-        });
     }
 }

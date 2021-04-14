@@ -15,27 +15,55 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+/**
+ * Client class, that manages the socket and all direct requests and answers from/to the server
+ * Works without the GUI
+ * Main class example:
+ *     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+ *         Client c = new Client("localhost", 1337, "Stefan");
+ *         c.connect();
+ *         c.sendFile(new File("tes.txt"));
+ *         c.close();
+ *         System.out.println("Connection closed.");
+ *     }
+ *
+ */
 public class Client {
 
+    /**
+     * Client socket
+     */
     private Socket socket;
+    /**
+     * Thread that manages all inputs
+     */
     private Thread inputThread;
-
+    /**
+     * clients username
+     */
     private String username;
+    /**
+     * server address and port
+     */
     private InetSocketAddress address;
-
+    /**
+     * connection status of client
+     */
     private boolean online;
 
+    /**
+     * inputstream/outputstream of socket
+     */
     private ObjectInputStream in;
     private ObjectOutputStream out;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Client c = new Client("localhost", 1337, "Stefan");
-        c.connect();
-        c.sendFile(new File("tes.txt"));
-        c.close();
-        System.out.println("Connection closed.");
-    }
-
+    /**
+     * Client constructor
+     * Creates the input handler thread and initializes variables
+     * @param address server address
+     * @param port server port
+     * @param username client username
+     */
     public Client(String address, int port, String username) {
         inputThread = new Thread(() -> {
             while (online) {
@@ -59,6 +87,11 @@ public class Client {
         online = false;
     }
 
+    /**
+     * Tries to connect to the specified server and updates information
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public void connect() throws IOException, ClassNotFoundException {
         socket = new Socket();
         socket.connect(address);
@@ -92,6 +125,9 @@ public class Client {
         inputThread.start();
     }
 
+    /**
+     * Tries to inform the server about the disconnect and closes the socket
+     */
     public void close() {
         try {
             if (isOnline()) {
@@ -106,13 +142,14 @@ public class Client {
         }
     }
 
+    /**
+     * Handles the socket input
+     * @param o
+     */
     private void handleInput(Object o) {
-        System.out.println("new  " + o);
         if (o instanceof ArrayList) {
             ArrayList<Object> transfer = (ArrayList<Object>) o;
             if (transfer.get(0).equals("sfp")) {
-                // Viele Threads sind keine gute Lösung, bei diesem minimalen Traffic aber in Ordnung
-
                 if (transfer.size() == 3) {
                     if (transfer.get(1).equals("users")) {
                             HomeFormController.updateUsers((String[]) transfer.get(2));
@@ -131,9 +168,14 @@ public class Client {
                 }
             }
         }
-        System.out.println("Message from server: " + o);
     }
 
+    /**
+     * Tries to send a file to the server
+     * @param f file
+     * @return true, if the transfer was successful
+     * @throws IOException
+     */
     public boolean sendFile(File f) throws IOException {
         if (f.exists() && f.isFile()) {
             String fileName = f.getName();
@@ -153,10 +195,19 @@ public class Client {
         }
     }
 
+    /**
+     * Getter for the connection status
+     * @return boolean connection status
+     */
     public boolean isOnline() {
         return online;
     }
 
+    /**
+     * Requests a file from the server
+     * @param f (FileMeta) file information
+     * @throws IOException
+     */
     public void requestDownload(FileMeta f) throws IOException {
         ArrayList<Object> transferList = new ArrayList<>();
         transferList.add("sfp");

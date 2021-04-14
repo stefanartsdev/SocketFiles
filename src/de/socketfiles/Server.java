@@ -1,47 +1,64 @@
 package de.socketfiles;
 
-import de.socketfiles.client.ClientInfo;
 import de.socketfiles.client.FileMeta;
 import de.socketfiles.client.SocketFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Main server class<br>
+ * This class represents the server to which users can connect with the SFP Client
+ */
 public class Server extends ServerSocket {
 
+    /**
+     * List of currently connected clients
+     */
     private ArrayList<ClientInfo> clients;
 
+    /**
+     * Temporary main class to run server on port
+     * If no port is specified as parameter, it will run on port 1805
+     * @param args server arguments
+     */
     public static void main(String[] args) {
         try {
-            new Server(1805);
+            try {
+                if(args.length == 1) {
+                    int port = Integer.parseInt(args[0]);
+                    new Server(port);
+                } else new Server(1805);
+            } catch (NumberFormatException e) {
+                new Server(1805);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Server class constructor
+     * @param port The port the server will run on
+     * @throws IOException on connection errors
+     */
     public Server(int port) throws IOException {
         super(port);
         clients = new ArrayList<>();
+        File files = new File("files");
+        files.mkdir();
         System.out.println("Server is running on " + port);
         while (!isClosed()) {
             Socket s;
             try {
                 s = accept();
                 System.out.println("Client attempting to connect at /" + s.getInetAddress().getHostAddress());
-                if (!s.getInetAddress().getHostAddress().equals("localhost") &&
-                        !s.getInetAddress().getHostAddress().equals("127.0.0.1")) {
-                    System.out.println("Client violates terms and is being closed. /" + s.getInetAddress().getHostAddress());
-                    s.close();
-                    continue;
-                }
             } catch (IOException e) {
                 e.printStackTrace();
                 continue;
@@ -70,6 +87,11 @@ public class Server extends ServerSocket {
         }
     }
 
+    /**
+     * Handles incoming input from successfully connected clients
+     * @param ci sender
+     * @param transfer data that is being transferred
+     */
     public void handleInput(ClientInfo ci, ArrayList<Object> transfer) {
         if(!transfer.get(0).equals("sfp")) return;
         if (transfer.size() == 4 &&
@@ -122,6 +144,12 @@ public class Server extends ServerSocket {
 
     }
 
+    /**
+     * Sends a file to a client
+     * @param ci client/receiver
+     * @param f file with meta information
+     * @throws IOException on transfer failure
+     */
     private void sendFileToClient(ClientInfo ci, SocketFile f) throws IOException {
         ArrayList<Object> transferList = new ArrayList<>();
         transferList.add("sfp");
@@ -131,6 +159,11 @@ public class Server extends ServerSocket {
         ci.send(transferList);
     }
 
+    /**
+     * Collects all information about currently uploaded files
+     * @return List of FileMeta Objects
+     * @throws IOException on file errors with Files.size
+     */
     private ArrayList<FileMeta> getCurrentMeta() throws IOException {
         ArrayList<FileMeta> files = new ArrayList<>();
         File root = new File("files");
@@ -145,6 +178,12 @@ public class Server extends ServerSocket {
         return files;
     }
 
+    /**
+     * Gets a file by meta
+     * @param fm FileMeta
+     * @return SocketFile file; if not existant, null
+     * @throws IOException on error with getFileByMeta
+     */
     private SocketFile getFileByMeta(FileMeta fm) throws IOException {
         File file = new File("files" + File.separator + fm.getAuthor() + File.separator + fm.getName());
         if(file.exists()) {
@@ -153,6 +192,13 @@ public class Server extends ServerSocket {
         return null;
     }
 
+    /**
+     * Gets a file by name and author
+     * @param name file name
+     * @param author file author
+     * @return SocketFile file
+     * @throws IOException if files does not exist
+     */
     private SocketFile getFileByMeta(String name, String author) throws IOException {
         return new SocketFile(name,
                 author,
@@ -160,6 +206,12 @@ public class Server extends ServerSocket {
         );
     }
 
+    /**
+     * Validates a connection request
+     * @param o message input by client
+     * @param ci client
+     * @return if client is validated, true, if not, then false
+     */
     private boolean validateRequest(Object o, ClientInfo ci) {
 
         if (o instanceof String[]) {
@@ -181,10 +233,18 @@ public class Server extends ServerSocket {
 
     }
 
+    /**
+     * Getter for the client list
+     * @return ArrayList of clients
+     */
     public synchronized ArrayList<ClientInfo> getClients() {
         return clients;
     }
 
+    /**
+     * Creates a String list of all client names
+     * @return Array of String consisting of client names
+     */
     public String[] getUsernameList() {
         String[] clients = new String[getClients().size()];
         for(int i = 0; i < clients.length; i++) {
@@ -193,6 +253,11 @@ public class Server extends ServerSocket {
         return clients;
     }
 
+    /**
+     * Sends a client the current file metas
+     * @param ci client
+     * @throws IOException on transfer failure
+     */
     public void updateFilesForClient(ClientInfo ci) throws IOException {
         ArrayList<Object> data = new ArrayList<>();
         data.add("sfp");
@@ -201,12 +266,21 @@ public class Server extends ServerSocket {
         ci.send(data);
     }
 
+    /**
+     * Tries to send a file meta update to all connected clients
+     * @throws IOException exception in updateFilesForClient()
+     */
     public void updateFilesForAllClients() throws IOException {
         for(ClientInfo ci : clients) {
             updateFilesForClient(ci);
         }
     }
 
+    /**
+     * Sends a client the currently connected users
+     * @param ci client
+     * @throws IOException on transfer failure
+     */
     public void updateUsersForClient(ClientInfo ci) throws IOException {
         List<Object> transfer = new ArrayList<>();
         transfer.add("sfp");
@@ -215,6 +289,10 @@ public class Server extends ServerSocket {
         ci.send(transfer);
     }
 
+    /**
+     * Tries to send a list of the names of all connected clients to all connected clients
+     * @throws IOException exception in updateFilesForClient()
+     */
     public void updateUsersForAllClients() throws IOException {
         for(ClientInfo ci : clients) {
             updateUsersForClient(ci);

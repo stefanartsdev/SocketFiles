@@ -5,12 +5,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
 import javafx.stage.FileChooser;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,11 +24,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the JavaFX home window
+ */
 public class HomeFormController implements Initializable {
 
     private static ListView<String> userListStatic;
     private static TableView<FileMeta> fileListStatic;
+    /**
+     * Holds last known user names
+     */
     private static String[] lastUsers;
+    /**
+     * Holds last known files with information
+     */
     private static ArrayList<FileMeta> lastFiles;
 
     @FXML
@@ -44,11 +58,26 @@ public class HomeFormController implements Initializable {
     @FXML
     private TableView<FileMeta> fileList;
 
+    /**
+     * Action event for the about button
+     * Shows an information alert and opens a web page
+     * @param event
+     */
     @FXML
     void about(ActionEvent event) {
-
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI("http://www.stefanarts.net"));
+            } catch (IOException|URISyntaxException e) {}
+        }
+        showInfo("Dieses Programm wurde von Stefan H. geschrieben", "About", Alert.AlertType.INFORMATION);
     }
 
+    /**
+     * Action event for the disconnect button
+     * Tries to disconnect the client and then terminates the program
+     * @param event
+     */
     @FXML
     void disconnect(ActionEvent event) {
         if(ClientLogic.disconnect()) {
@@ -56,11 +85,24 @@ public class HomeFormController implements Initializable {
         }
     }
 
+    /**
+     * Actioon event for the help button
+     * Shows a help alert
+     * @param event
+     */
     @FXML
     void help(ActionEvent event) {
-
+        showInfo("Um eine Datei hochzuladen, ziehen Sie sie entweder in das Fenster oder klicken Sie auf" +
+                "Aktionen -> Datei hochladen.\n" +
+                "Um eine Datei herunterzuladen, doppelklicken Sie auf diese Datei in der Liste.\n" +
+                "Um die Verbindung zu trennen, schließen Sie die Anwendung oder klicken Sie auf Aktionen ->" +
+                "Verbindung trennen.", "Hilfe", Alert.AlertType.INFORMATION);
     }
 
+    /**
+     * Accepts a drag if clipboard contains a file
+     * @param event
+     */
     @FXML
     void onDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles()) {
@@ -69,6 +111,11 @@ public class HomeFormController implements Initializable {
         event.consume();
     }
 
+    /**
+     * Handles the drag dropped event
+     * Validates the clipboard and then tries to upload the dropped file via {@link de.socketfiles.client.ClientLogic#uploadFile(File)}
+     * @param event
+     */
     @FXML
     void onDragDropped(DragEvent event) {
         Dragboard db = event.getDragboard();
@@ -92,6 +139,11 @@ public class HomeFormController implements Initializable {
 
     }
 
+    /**
+     * Handles the upload file button
+     * Opens a file dialog and tries to upload the selected file via {@link de.socketfiles.client.ClientLogic#uploadFile(File)}
+     * @param event
+     */
     @FXML
     void uploadFile(ActionEvent event) {
         FileChooser fc = new FileChooser();
@@ -108,6 +160,11 @@ public class HomeFormController implements Initializable {
         }
     }
 
+    /**
+     * Tries to save a file received by the server
+     * @param name file name
+     * @param data file data
+     */
     public static void saveFile(String name, byte[] data) {
         Platform.runLater(() -> {
             FileChooser fc = new FileChooser();
@@ -124,6 +181,10 @@ public class HomeFormController implements Initializable {
         });
     }
 
+    /**
+     * Updates the online usernames
+     * @param clients usernames
+     */
     public static void updateUsers(String[] clients) {
         assert clients != null;
         if(userListStatic == null) {
@@ -139,6 +200,10 @@ public class HomeFormController implements Initializable {
 
     }
 
+    /**
+     * Updates the uploaded files
+     * @param files uploaded files
+     */
     public static void updateFiles(ArrayList<FileMeta> files) {
         if(fileListStatic == null) {
             lastFiles = files;
@@ -153,6 +218,12 @@ public class HomeFormController implements Initializable {
         }
     }
 
+    /**
+     * Shows an alert to the user
+     * @param msg alert message
+     * @param title alert title
+     * @param type alert type
+     */
     private static void showInfo(String msg, String title, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle("SFP Client");
@@ -161,6 +232,12 @@ public class HomeFormController implements Initializable {
         alert.showAndWait();
     }
 
+    /**
+     * Initializes variables on call and creates table columns
+     * Sets double click event for file downloads
+     * @param location
+     * @param resources
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         userListStatic = userList;
