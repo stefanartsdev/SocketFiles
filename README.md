@@ -3,6 +3,8 @@
 [![snapshot](https://img.shields.io/badge/Status-dev-red)](https://paypal.me/RafaelMardojaiCM)<br>
 A server/client environment utilising the socket file protocol to transfer files
 
+Javadoc: https://stefanartsdev.github.io/SocketFiles/
+
 ## Client
 To connect to a server, just enter a correct server address, port and username
 
